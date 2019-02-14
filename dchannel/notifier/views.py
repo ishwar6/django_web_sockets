@@ -41,5 +41,13 @@ class GroupChatView(TemplateView):
         context = super(GroupChatView, self).get_context_data(**kwargs)
         context.update(groups=Group.objects.all())
         return context
+ @csrf_exempt
+    def dispatch(self, *args, **kwargs):
+        return super(GroupChatView, self).dispatch(*args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        redis_publisher = RedisPublisher(facility='foobar', groups=[request.POST.get('group')])
+        message = RedisMessage(request.POST.get('message'))
+        redis_publisher.publish_message(message)
+        return HttpResponse('OK')
    
